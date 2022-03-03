@@ -14,34 +14,44 @@ public class Player {
     public Player() {
         playerNum = nextPlayerNum++;
     }
+
     public void addLoss() {
         this.countLoss++;
     }
+
     public void addWin() {
         this.countWin++;
     }
+
     public int getPlayerNumber() {
         return playerNum;
     }
+
     public int getRollsUsed() {
         return this.rollsUsed;
     }
+
     public int getScore() {
         return score;
     }
+
     public int getWins() {
         return countWin;
     }
+
     public void setScore(int score) {
         this.score = score;
     }
+
     public void resetPlayer() {
         score = 0;
         rollsUsed = 0;
     }
+
     public void roll() {
         rollsUsed++;
     }
+
     public String toString() {
         return String.format("Player %d: %d (Won: %d, Lost: %d)",
                 playerNum, score, countWin, countLoss);

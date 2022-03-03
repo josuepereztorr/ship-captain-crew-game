@@ -18,26 +18,33 @@ public class Die {
         this.sides = sides;
         rollDie();
     }
+
     public char getDieNum() {
         return dieNum;
     }
+
     public int getFaceValue() {
         return faceValue;
     }
+
     public void holdDie() {
         this.isHeld = true;
     }
+
     public boolean isBeingHeld() {
         return this.isHeld;
     }
+
     public void resetDie() {
         this.isHeld = false;
     }
+
     public void rollDie() {
         if (!isHeld) {
             faceValue = randomGen.nextInt(sides) + 1;
         }
     }
+
     public String toString() {
         return dieNum + ". " + getFaceValue() + (isHeld ? " (H)" : " (-)");
     }
