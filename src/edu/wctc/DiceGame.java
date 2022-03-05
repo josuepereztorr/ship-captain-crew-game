@@ -15,7 +15,8 @@ public class DiceGame {
 
     public DiceGame(int countPlayers, int countDice, int maxRolls) {
 
-        players = Collections.nCopies(countPlayers, new Player());
+        players = new ArrayList<>();
+        for(int i = 0; i < countPlayers; i++) players.add(new Player());
 
         dice = new ArrayList<>();
         for (int i = 0; i < countDice; i++) dice.add(new Die(6));
@@ -38,11 +39,16 @@ public class DiceGame {
                 dice.stream()
                         .filter(die -> die.getFaceValue() == faceValue);
 
+
+
+        List<Die> list =
+                dice.stream().filter(die -> die.getFaceValue() == faceValue).toList();
+
         // if the stream as any items held/unheld return true
-        if (faceValueDice.findAny().isPresent()) {
+        if (list.size() > 0) {
 
             // if there are any die that are not being held, hold them.
-            if (faceValueDice.anyMatch(die -> !die.isBeingHeld())) {
+            if (list.stream().anyMatch(die -> !die.isBeingHeld())) {
                 faceValueDice
                         .filter(die -> !die.isBeingHeld())
                         .findFirst().
@@ -57,7 +63,7 @@ public class DiceGame {
     }
 
     public boolean currentPlayerCanRoll() {
-        return currentPlayer.getRollsUsed() < maxRolls || !allDiceHeld();
+        return currentPlayer.getRollsUsed() <= maxRolls || !allDiceHeld();
     }
 
     public int getCurrentPlayerNumber() {
