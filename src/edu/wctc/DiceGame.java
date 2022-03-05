@@ -31,15 +31,30 @@ public class DiceGame {
         return dice.stream().allMatch(Die::isBeingHeld);
     }
 
-    // todo
-//    public boolean autoHold(int faceValue) {
-//        // find dice with the given face value
-//        Optional<Die> dieHeld =
-//                dice.stream().filter(die -> die.getFaceValue() == faceValue && die.isBeingHeld()).findFirst();
-//
-//        Optional<Die> dieNotHeld =
-//                dice.stream().filter(die -> die.getFaceValue() == faceValue && die.isBeingHeld()).findFirst();
-//    }
+    public boolean autoHold(int faceValue) {
+
+        // stream of dice with faceValue
+        Stream<Die> faceValueDice =
+                dice.stream()
+                        .filter(die -> die.getFaceValue() == faceValue);
+
+        // if the stream as any items held/unheld return true
+        if (faceValueDice.findAny().isPresent()) {
+
+            // if there are any die that are not being held, hold them.
+            if (faceValueDice.anyMatch(die -> !die.isBeingHeld())) {
+                faceValueDice
+                        .filter(die -> !die.isBeingHeld())
+                        .findFirst().
+                        ifPresent(Die::holdDie);
+            }
+
+            return true;
+        } else
+            // if the stream found no items
+            return false;
+
+    }
 
     public boolean currentPlayerCanRoll() {
         return currentPlayer.getRollsUsed() < maxRolls || !allDiceHeld();
@@ -78,8 +93,9 @@ public class DiceGame {
         // search the players list for the winner object and addWin()
         players.get(players.indexOf(winner)).addWin();
 
-        // addLoss to the rest of the players
-        sortedPlayers.forEach(Player::addLoss);
+        // addLoss to the rest of the players and skip the first item
+        // (the highest score)
+        sortedPlayers.skip(0).forEach(Player::addLoss);
 
         // returns a string composed by concatenating each Players's toString
         return players.stream()
@@ -89,16 +105,16 @@ public class DiceGame {
 
     public boolean isHoldingDie(int faceValue) {
         // get all die that are held
-        List<Die> heldDice =
+        Optional<Die> heldDie =
                 dice.stream()
                         .filter(die -> die.getFaceValue() == faceValue && die.isBeingHeld())
-                        .toList();
-        return heldDice.size() > 0;
+                        .findFirst();
+        return heldDie.isPresent();
     }
 
     public boolean nextPlayer() {
         // find the total number of players and the index of the current player
-        int playersLeft = players.size() - players.indexOf(currentPlayer);
+        int playersLeft = players.size() - (players.indexOf(currentPlayer) + 1);
 
         if (playersLeft > 0) {
             currentPlayer = players.get(players.indexOf(currentPlayer) + 1);
@@ -131,31 +147,43 @@ public class DiceGame {
                 .forEach(Die::rollDie);
     }
 
-//    public void scoreCurrentPlayer() {
-//
-//        int score = 0;
-//
-//        // list to keep all dice face numbers
-//        List<Integer> faces = new ArrayList<>();
-//
-//        // copy the face numbers to the list
-//        for (Die die : dice) faces.add(die.getFaceValue());
-//
-//        // stores each unique element as the key and the frequency as the value
-//        // https://www.techiedelight.com/count-frequency-elements-list-java/
-//        Map<Integer, Long> frequencyMap =
-//                faces.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-//
-//        // iterate through the hashmap to find if the player has a 6,5,4
-//        if (frequencyMap.containsKey(6) && frequencyMap.containsKey(5) & frequencyMap.containsKey(4)) {
-//            long numOfSix = frequencyMap.get(6);
-//            long numOfFive = frequencyMap.get(5);
-//            long numOfFour = frequencyMap.get(4);
-//
-//            if (numOfSix && numOfFive && numOfFour == 1)
-//        }
-//
-//    }
+    public void scoreCurrentPlayer() {
+
+        Optional<Die> shipObject =
+                dice.stream().filter(die -> die.getFaceValue() == 6 && die.isBeingHeld()).findFirst();
+
+        Optional<Die> captainObject =
+                dice.stream().filter(die -> die.getFaceValue() == 6 && die.isBeingHeld()).findFirst();
+
+        Optional<Die> crewObject =
+                dice.stream().filter(die -> die.getFaceValue() == 6 && die.isBeingHeld()).findFirst();
+
+        boolean ship =
+                dice.stream().anyMatch(die -> die.getFaceValue() == 6 && die.isBeingHeld());
+
+        boolean captain =
+                dice.stream().anyMatch(die -> die.getFaceValue() == 5 && die.isBeingHeld());
+
+        boolean crew =
+                dice.stream().anyMatch(die -> die.getFaceValue() == 4 && die.isBeingHeld());
+
+        int score = 0;
+
+        if (ship && captain && crew) {
+            // try to remove the ship, captain, and crew
+            List<Die> listOfDice = dice.stream().toList();
+            listOfDice.remove(shipObject.orElse(new Die(6)));
+            listOfDice.remove(captainObject.orElse(new Die(6)));
+            listOfDice.remove(crewObject.orElse(new Die(6)));
+
+            // calculate the score for the remaining cargo
+            for (Die die : listOfDice) {
+                score += die.getFaceValue();
+            }
+        }
+
+        currentPlayer.setScore(currentPlayer.getScore() + score);
+    }
 
     public void startNewGame() {
         // first player in list will be current player
